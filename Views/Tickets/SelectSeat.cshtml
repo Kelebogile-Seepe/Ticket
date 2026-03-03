@@ -1,0 +1,317 @@
+﻿@model BeyonceConcert.ViewModels.TicketPurchaseViewModel
+@{
+    ViewData["Title"] = "Book Tickets";
+    Layout = null;
+}
+
+<!DOCTYPE html>
+<html>
+<head>
+    <meta name="viewport" content="width=device-width" />
+    <title>Book Tickets</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" />
+
+    <style>
+        body {
+            background-color: #f4f5f7;
+        }
+
+        .sidebar {
+            width: 220px;
+            height: 100vh;
+            position: fixed;
+            background: white;
+            padding: 20px;
+            border-right: 1px solid #e5e5e5;
+        }
+
+            .sidebar h5 {
+                color: #7b4bff;
+                font-weight: bold;
+            }
+
+            .sidebar a {
+                display: block;
+                margin: 15px 0;
+                color: #333;
+                text-decoration: none;
+            }
+
+                .sidebar a:hover {
+                    color: #7b4bff;
+                }
+
+        .main {
+            margin-left: 240px;
+            padding: 30px;
+        }
+
+        .card-dashboard {
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+        }
+
+        .btn-purple {
+            background-color: #7b4bff;
+            color: white;
+            border: none;
+        }
+
+            .btn-purple:hover {
+                background-color: #6938e6;
+            }
+
+        .stat-card {
+            background: #ede7ff;
+            padding: 20px;
+            border-radius: 10px;
+        }
+
+        .topbar {
+            height: 70px;
+            background: white;
+            border-bottom: 1px solid #e5e5e5;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 25px;
+            position: fixed;
+            left: 220px;
+            right: 0;
+            top: 0;
+            z-index: 1000;
+        }
+
+        .main {
+            margin-left: 240px;
+            padding: 100px 30px 30px 30px; /* extra top padding */
+        }
+
+        .search-box {
+            width: 300px;
+            border-radius: 20px;
+        }
+
+        .icon-btn {
+            background: #f3f0ff;
+            border-radius: 50%;
+            padding: 8px 12px;
+            margin-left: 15px;
+            cursor: pointer;
+        }
+
+            .icon-btn:hover {
+                background: #e2d9ff;
+            }
+
+        .avatar {
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            background: #7b4bff;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            margin-left: 15px;
+        }
+
+        .table-scroll {
+            max-height: 500px; 
+            overflow-y: auto;
+        }
+    </style>
+</head>
+<body>
+    <!-- TOP NAVIGATION BAR -->
+    <div class="topbar">
+
+        <h5 class="mb-0">Dashboard</h5>
+
+        <div class="d-flex align-items-center">
+
+            <!-- SEARCH -->
+            <input type="text"
+                   class="form-control search-box me-3"
+                   placeholder="Search tickets..." />
+
+            <!-- NOTIFICATIONS -->
+            <div class="icon-btn">
+                🔔
+            </div>
+
+            <!-- PROFILE AVATAR -->
+            <div class="avatar">
+                @User.Identity?.Name?.Substring(0, 1)
+            </div>
+
+        </div>
+    </div>
+
+    <!-- SIDEBAR -->
+    <div class="sidebar">
+        <h5>🎤 BeyoncéConcert</h5>
+        <a href="#">Dashboard</a>
+        <a href="#">Book Tickets</a>
+        <a href="#">Reports</a>
+        <a href="#">Settings</a>
+    </div>
+
+    <!-- MAIN CONTENT -->
+    <div class="main">
+
+        <h3>Beyoncé Renaissance World Tour: Book Your Tickets</h3>
+        <p class="text-muted">Johannesburg, South Africa</p>
+
+        <!-- STATS -->
+        <div class="row mb-4">
+            <div class="col-md-6">
+                <div class="stat-card">
+                    <h6>Total Revenue</h6>
+                    <h4>R @Model.RecentSales.Sum(x => x.Price)</h4>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="stat-card">
+                    <h6>Tickets Sold</h6>
+                    <h4>@Model.RecentSales.Count()</h4>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+
+            <!-- LEFT SIDE PURCHASE -->
+            <div class="col-md-5">
+                <div class="card p-4 card-dashboard">
+
+                    <h5>Ticket Purchase</h5>
+
+                    <form asp-action="SelectSeat" method="post" id="purchaseForm">
+                        @Html.AntiForgeryToken()
+
+                        <input type="hidden" asp-for="Category" />
+                        <input type="hidden" asp-for="Price" />
+                        <input type="hidden" asp-for="SelectedTicketId" />
+
+                        <h6>Select Ticket Category</h6>
+
+                        <div class="d-flex gap-2 mb-3">
+                            <button type="button" class="btn btn-outline-primary w-100"
+                                    onclick="selectCategory('VIP',2000)">
+                                VIP<br />R2000
+                            </button>
+
+                            <button type="button" class="btn btn-outline-primary w-100"
+                                    onclick="selectCategory('General',500)">
+                                General<br />R500
+                            </button>
+                        </div>
+
+                        <h6>Buyer Information</h6>
+
+                        <input asp-for="BuyerName" class="form-control mb-2" placeholder="Buyer Name" />
+
+                        <select asp-for="Gender" class="form-select mb-2">
+                            <option disabled selected>Select Gender</option>
+                            <option>Female</option>
+                            <option>Male</option>
+                            <option>Non-binary</option>
+                        </select>
+
+                        <input asp-for="Age" type="number" class="form-control mb-3" placeholder="Age" />
+
+                        <input asp-for="Quantity" id="quantity"
+                               class="form-control mb-3" type="number" min="1" value="1" />
+
+                        <div class="bg-light p-3 rounded mb-3">
+                            <p><strong>Category:</strong> <span id="summaryCategory">N/A</span></p>
+                            <p><strong>Total:</strong> R<span id="summaryTotal">0</span></p>
+                        </div>
+
+                        <button class="btn btn-purple w-100" type="submit">
+                            Purchase Tickets
+                        </button>
+                    </form>
+
+                </div>
+            </div>
+
+            <!-- RIGHT SIDE RECENT SALES -->
+            <div class="col-md-7">
+             <div class="card p-4 card-dashboard mb-4">
+                <h5>Available Seats</h5>
+
+                <div class="table-scroll">
+                    <table class="table table-sm">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Select</th>
+                                <th>Seat</th>
+                                <th>Category</th>
+                                <th>Price</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var ticket in Model.AvailableTickets)
+                            {
+                                <tr>
+                                    <td>
+                                        <input type="radio"
+                                               name="ticketRadio"
+                                               class="ticket-radio"
+                                               data-ticket-id="@ticket.Id"
+                                               data-category="@ticket.Category"
+                                               data-price="@ticket.Price" />
+                                    </td>
+                                    <td>@ticket.SeatNumber</td>
+                                    <td>@ticket.Category</td>
+                                    <td>R@ticket.Price</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+             </div>
+            </div>
+
+                <div class="card p-4 card-dashboard">
+                    <h5>Recent Sales</h5>
+
+                    <table class="table table-sm">
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Category</th>
+                                <th>Gender</th>
+                                <th>Age</th>
+                                <th>Seat</th>
+                                <th>Price</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var sale in Model.RecentSales)
+                            {
+                                <tr>
+                                    <td>@sale.SaleDate.ToString("yyyy-MM-dd")</td>
+                                    <td>@sale.Category</td>
+                                    <td>@sale.Gender</td>
+                                    <td>@sale.Age</td>
+                                    <td>@sale.SeatNumber</td>
+                                    <td>R@sale.Price</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</body>
+</html>
